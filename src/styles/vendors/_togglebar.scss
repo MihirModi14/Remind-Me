@@ -1,0 +1,23 @@
+.MuiToggleButtonGroup-root {
+    .MuiToggleButtonGroup-grouped {
+      border: 1px solid #007aff;
+      text-transform: unset;
+      padding: 1px 10px;
+      font-size: 14px;
+      width: 90px;
+  
+      &:hover {
+        background-color: #b3d7ff;
+      }
+  
+      &.Mui-selected {
+        background-color: #007aff;
+        color: #fff;
+  
+        &:hover {
+          background-color: #007aff;
+        }
+      }
+    }
+  }
+  

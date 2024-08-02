@@ -1,0 +1,17 @@
+@import "../../styles/abstracts/abstracts";
+
+.header {
+  position: relative;
+  border-bottom: solid 1px $silverColor;
+  background-color: $grayColor;
+  text-align: center;
+  padding: 13px;
+  font-size: 16px;
+
+  a {
+    cursor: pointer;
+    position: absolute;
+    right: 14px;
+    top: 14px;
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Remind Me",
+  "description": "Get timely reminders for your tasks and meetings with this extension.",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "index.html",
+    "matches": ["<all_urls>"]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "permissions": ["identity", "alarms", "storage"],
+  "oauth2": {
+    "client_id": "686032428033-98b4n4kch7b061kni5plgrjtanbhucjt.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/calendar.readonly"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"]
+    }
+  ]
+}

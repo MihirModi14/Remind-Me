@@ -1,0 +1,12 @@
+.container {
+  margin: auto;
+  background-color: #efeff4;
+  width: 330px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+
+  section {
+    overflow: auto;
+    height: 416px;
+    width: 100%;
+  }
+}

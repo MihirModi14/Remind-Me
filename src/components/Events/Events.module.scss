@@ -1,0 +1,55 @@
+@import "../../styles/abstracts/abstracts";
+
+.events {
+  ul {
+    list-style: none;
+    padding: 0;
+
+    a {
+      background-color: $whiteColor;
+      border-bottom: solid 1px $silverColor1;
+      display: inline-block;
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 16px 12px;
+      width: 100%;
+
+      &:hover {
+        background-color: $grayColor1;
+      }
+
+      .meetingInfo {
+        display: flex;
+        justify-content: space-between;
+
+        p {
+          font-weight: bold;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 156px;
+          font-size: 16px;
+        }
+
+        span {
+          color: $blueColor;
+          font-size: 14px;
+          font-weight: bold;
+        }
+      }
+
+      .description {
+        margin-top: 7px;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .noDataFound {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+}
