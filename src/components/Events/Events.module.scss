@@ -1,6 +1,7 @@
 @import "../../styles/abstracts/abstracts";
 
 .events {
+  height: 100%;
   ul {
     list-style: none;
     padding: 0;
@@ -50,6 +51,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 14px;
     height: 100%;
   }
 }
