@@ -26,7 +26,7 @@ const Options = () => {
       options: options,
     });
 
-    chrome.runtime.sendMessage({ from: "options_update" }, () => {
+    chrome.runtime.sendMessage({ task: "sync_events" }, () => {
       console.log("Data Updated data");
     });
   };

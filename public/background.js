@@ -187,7 +187,7 @@ function createTab(url, retryCount = 0) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.from === "options_update") {
+  if (message.task === "sync_events") {
     fetchEvents();
   }
   sendResponse({ status: "events updated" });

@@ -4,6 +4,13 @@ import { TABS } from "../../utils";
 import style from "./Header.module.scss";
 
 const Header = ({ activeTab, setActiveTab }: any) => {
+  // Page Events
+  const onClickRefresh = () => {
+    chrome.runtime.sendMessage({ task: "sync_events" }, () => {
+      console.log("refresh done");
+    });
+  };
+
   return (
     <header className={style.header}>
       <ToggleButtonGroup
@@ -14,7 +21,7 @@ const Header = ({ activeTab, setActiveTab }: any) => {
         <ToggleButton value={TABS.EVENTS}>Events</ToggleButton>
         <ToggleButton value={TABS.OPTIONS}>Options</ToggleButton>
       </ToggleButtonGroup>
-      <a onClick={() => console.log("Update Meeting")}>
+      <a onClick={onClickRefresh}>
         <img src="./assets/refresh.svg" alt="refresh" />
       </a>
     </header>
