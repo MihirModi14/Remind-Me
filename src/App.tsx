@@ -12,6 +12,18 @@ function App() {
   return (
     <main className="container">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* <section
+        style={{ display: activeTab === TABS.EVENTS ? "block" : "none" }}
+      >
+        {<Events />}
+      </section>
+      <section
+        style={{
+          display: activeTab === TABS.OPTIONS ? "block" : "none",
+        }}
+      >
+        {<Options />}
+      </section> */}
       <section>{activeTab === TABS.EVENTS ? <Events /> : <Options />}</section>
     </main>
   );

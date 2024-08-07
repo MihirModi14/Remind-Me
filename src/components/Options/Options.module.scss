@@ -1,0 +1,15 @@
+.options {
+  ul {
+    padding: 4px 14px;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      p {
+        font-size: 14px;
+      }
+    }
+  }
+}

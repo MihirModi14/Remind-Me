@@ -1,18 +1,19 @@
+const DEFAULT_OPTIONS = {
+  showAllMeeting: false,
+  includeOptional: false,
+};
+
 // Event listener for when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
-  initializeExtension();
+  fetchAuthTokenAndEvents();
+  setUpAlarms();
 });
 
 // Event listener for when the browser starts up
 chrome.runtime.onStartup.addListener(() => {
-  initializeExtension();
-});
-
-// Function to initialize the extension
-function initializeExtension() {
-  setUpAlarms();
   fetchAuthTokenAndEvents();
-}
+  setUpAlarms();
+});
 
 // Function to set up periodic alarms
 const setUpAlarms = () => {
@@ -21,46 +22,85 @@ const setUpAlarms = () => {
 };
 
 // Function to fetch authentication token and events
-function fetchAuthTokenAndEvents() {
-  chrome.identity.getAuthToken({ interactive: true }, (token) => {
+const fetchAuthTokenAndEvents = () => {
+  chrome.identity.getAuthToken({ interactive: true }, async (token) => {
     if (chrome.runtime.lastError || !token) {
       console.error("Failed to get token:", chrome.runtime.lastError);
       return;
     }
-    fetchEvents(token);
+    await chrome.storage.local.set({ token });
+    fetchEvents();
+    fetchUserInfo();
   });
-}
+};
 
-const getEventList = (token) => {
+const getEventList = async () => {
   return fetch(
     "https://www.googleapis.com/calendar/v3/calendars/primary/events",
     {
       headers: {
-        Authorization: "Bearer " + token,
+        Authorization:
+          "Bearer " + (await chrome.storage.local.get("token")).token,
       },
     }
   );
 };
 
-// Function to fetch events from Google Calendar API
-const fetchEvents = (token) => {
-  getEventList(token)
+const getUserInfo = async () => {
+  return fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: {
+      Authorization:
+        "Bearer " + (await chrome.storage.local.get("token")).token,
+    },
+  });
+};
+
+const fetchUserInfo = () => {
+  getUserInfo()
     .then((response) => response.json())
-    .then(handleEventListResponse)
+    .then((data) => {
+      chrome.storage.local.set({ email: data.email });
+    });
+};
+
+// Function to fetch events from Google Calendar API
+const fetchEvents = () => {
+  getEventList()
+    .then((response) => response.json())
+    .then((response) => handleEventListResponse(response.items))
     .catch((error) => console.error("Error fetching events:", error));
 };
 
-const handleEventListResponse = (response) => {
-  const todayEvents = response.items.filter((item) =>
-    isDateToday(item?.start?.dateTime)
+const handleEventListResponse = async (eventList) => {
+  const myEmail = (await chrome.storage.local.get("email")).email;
+  const options = (await chrome.storage.local.get("options")).options;
+  const showAllMeeting =
+    options?.showAllMeeting || DEFAULT_OPTIONS.showAllMeeting;
+  const includeOptional =
+    options?.includeOptional || DEFAULT_OPTIONS.includeOptional;
+
+  const todayEvents = sortEvents(
+    eventList.filter((item) => isDateToday(item?.start?.dateTime))
   );
-  const upcomingEvents = removePastEvents(sortEvents(todayEvents));
-  scheduleTask("meeting", upcomingEvents?.[0]?.start?.dateTime);
-  chrome.storage.local.set({ events: upcomingEvents });
+  const updatedTodayEvents = includeOptional
+    ? todayEvents
+    : todayEvents.filter(
+        (event) =>
+          !event.attendees ||
+          event.attendees.some(
+            (attendee) => attendee.email === myEmail && !attendee.optional
+          )
+      );
+  const nextEvents = removePastEvents(updatedTodayEvents);
+  scheduleTask("meeting", nextEvents?.[0]?.start?.dateTime);
+  chrome.storage.local.set({
+    events: showAllMeeting ? updatedTodayEvents : nextEvents,
+  });
 };
 
 // Utility function to check if a meeting is scheduled for today
 const isDateToday = (date) => {
+  if (!date) return false;
   const meetingDate = new Date(date);
   const today = new Date();
   return (
@@ -119,11 +159,9 @@ const scheduleTask = (taskName, dateTime) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   switch (alarm.name) {
     case "meeting":
-      const events = (await chrome.storage.local.get("events")).events;
-      createTab(events[0]?.hangoutLink);
-      const upcomingEvents = removePastEvents(events);
-      scheduleTask("meeting", upcomingEvents?.[0]?.start?.dateTime);
-      chrome.storage.local.set({ events: upcomingEvents });
+      const eventList = (await chrome.storage.local.get("events")).events;
+      createTab(eventList[0]?.hangoutLink);
+      handleEventListResponse(eventList);
       break;
     case "fetchEvents":
       console.log("fetchAuthTokenAndEvents function called", new Date());
@@ -147,3 +185,10 @@ function createTab(url, retryCount = 0) {
     }
   });
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.from === "options_update") {
+    fetchEvents();
+  }
+  sendResponse({ status: "events updated" });
+});
