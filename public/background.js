@@ -3,6 +3,12 @@ const DEFAULT_OPTIONS = {
   includeOptional: false,
 };
 
+const MEETING_ACTION = {
+  NEW_TAB: 1,
+  NOTIFICATION: 2,
+  NOTHING: 3,
+};
+
 // Event listener for when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   fetchAuthTokenAndEvents();
@@ -160,7 +166,19 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   switch (alarm.name) {
     case "meeting":
       const eventList = (await chrome.storage.local.get("events")).events;
-      createTab(eventList[0]?.hangoutLink);
+      const options = (await chrome.storage.local.get("options")).options;
+
+      switch (options.meetingAction) {
+        case MEETING_ACTION.NEW_TAB:
+          createTab(eventList[0]?.hangoutLink);
+          break;
+        case MEETING_ACTION.NOTIFICATION:
+          createNotification(
+            "Meeting Reminder",
+            `You have a "${eventList[0].summary}" meeting`
+          );
+          break;
+      }
       handleEventListResponse(eventList);
       break;
     case "fetchEvents":
@@ -171,7 +189,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 });
 
 // Function to create a new tab with retries
-function createTab(url, retryCount = 0) {
+const createTab = (url, retryCount = 0) => {
   chrome.tabs.create({ url: url }, () => {
     if (chrome.runtime.lastError) {
       console.log(
@@ -184,7 +202,26 @@ function createTab(url, retryCount = 0) {
       console.log("New tab created");
     }
   });
-}
+};
+
+const createNotification = (title, message) => {
+  const options = {
+    type: "basic",
+    iconUrl: "meeting.jpeg",
+    title: title,
+    message: message,
+    buttons: [{ title: "Join Meeting" }],
+  };
+
+  chrome.notifications.create("notify", options, (notificationId) => {
+    console.log("Notification created: ", notificationId);
+  });
+};
+
+chrome.notifications.onButtonClicked.addListener(async () => {
+  const eventList = (await chrome.storage.local.get("events")).events;
+  createTab(eventList[0].hangoutLink);
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.task === "sync_events") {

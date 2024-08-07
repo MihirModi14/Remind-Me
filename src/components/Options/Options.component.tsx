@@ -1,7 +1,7 @@
-import { Switch } from "@mui/material";
+import { FormControl, MenuItem, Select, Switch } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { DEFAULT_OPTIONS } from "../../utils";
+import { DEFAULT_OPTIONS, MEETING_ACTION } from "../../utils";
 import styled from "./Options.module.scss";
 
 const Options = () => {
@@ -31,7 +31,7 @@ const Options = () => {
     });
   };
 
-  const updateOptions = (key: string, value: boolean | string) => {
+  const updateOptions = (key: string, value: boolean | string | number) => {
     setOptions((options) => {
       const updatedOptions = {
         ...options,
@@ -46,7 +46,7 @@ const Options = () => {
     <div className={styled.options}>
       <ul>
         <li>
-          <p>Show all events</p>
+          <p>Show past events</p>
           <Switch
             id="showAllMeeting"
             checked={options.showAllMeeting}
@@ -56,7 +56,7 @@ const Options = () => {
           />
         </li>
         <li>
-          <p>Show meeting where I am optional</p>
+          <p>Show optional meetings</p>
           <Switch
             id="includeOptional"
             checked={options.includeOptional}
@@ -64,6 +64,26 @@ const Options = () => {
               updateOptions(e.target.id, Boolean(e.target.checked))
             }
           />
+        </li>
+        <li>
+          <p>Select an action for the meeting</p>
+          <FormControl>
+            <Select
+              name="meetingAction"
+              value={options.meetingAction}
+              onChange={(e) =>
+                updateOptions(e.target.name, Number(e.target.value))
+              }
+            >
+              <MenuItem value={MEETING_ACTION.NEW_TAB}>
+                Open in New Tab
+              </MenuItem>
+              <MenuItem value={MEETING_ACTION.NOTIFICATION}>
+                Send Notification
+              </MenuItem>
+              <MenuItem value={MEETING_ACTION.NOTHING}>Do Nothing</MenuItem>
+            </Select>
+          </FormControl>
         </li>
       </ul>
     </div>
