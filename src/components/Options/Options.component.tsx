@@ -42,6 +42,12 @@ const Options = () => {
     });
   };
 
+  const getActionValue = (selectedValue: number) => {
+    if (selectedValue === MEETING_ACTION.NEW_TAB) return "new tab";
+    if (selectedValue === MEETING_ACTION.NOTIFICATION) return "notification";
+    return "nothing";
+  };
+
   return (
     <div className={styled.options}>
       <ul>
@@ -74,6 +80,7 @@ const Options = () => {
               onChange={(e) =>
                 updateOptions(e.target.name, Number(e.target.value))
               }
+              renderValue={(selectedValue) => getActionValue(selectedValue)}
             >
               <MenuItem value={MEETING_ACTION.NEW_TAB}>
                 Open in New Tab
