@@ -14,4 +14,11 @@ export const DEFAULT_OPTIONS = {
   includeOptional: false,
   meetingAction: MEETING_ACTION.NEW_TAB,
   executeBefore: 0,
+  fetchDuration: 1,
+};
+
+export const MESSAGING_TASK = {
+  SYNC_EVENTS: "sync_events",
+  OPTION_UPDATE: "options_updated",
+  UPDATE_ALARM: "update_alarm",
 };

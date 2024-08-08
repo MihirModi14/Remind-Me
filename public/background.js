@@ -1,6 +1,7 @@
 const MESSAGING_TASK = {
   SYNC_EVENTS: "sync_events",
   OPTION_UPDATE: "options_updated",
+  UPDATE_ALARM: "update_alarm",
 };
 
 const MEETING_ACTION = {
@@ -14,24 +15,30 @@ const DEFAULT_OPTIONS = {
   includeOptional: false,
   meetingAction: MEETING_ACTION.NEW_TAB,
   executeBefore: 0,
+  fetchDuration: 1,
 };
 
 // Event listener for when the extension is installed or updated
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   fetchAuthTokenAndEvents();
-  setUpAlarms();
+  const options = (await chrome.storage.local.get("options")).options;
+  const fetchDuration = options?.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
+  setUpAlarms(fetchDuration);
 });
 
 // Event listener for when the browser starts up
-chrome.runtime.onStartup.addListener(() => {
+chrome.runtime.onStartup.addListener(async () => {
   fetchAuthTokenAndEvents();
-  setUpAlarms();
+  const options = (await chrome.storage.local.get("options")).options;
+  const fetchDuration = options?.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
+  setUpAlarms(fetchDuration);
 });
 
 // Function to set up periodic alarms
-const setUpAlarms = () => {
+const setUpAlarms = (periodInHour) => {
+  const periodInMinutes = periodInHour * 60;
   chrome.alarms.clear("fetchEvents");
-  chrome.alarms.create("fetchEvents", { periodInMinutes: 1 });
+  chrome.alarms.create("fetchEvents", { periodInMinutes: periodInMinutes });
 };
 
 // Function to fetch authentication token and events
@@ -265,6 +272,11 @@ chrome.notifications.onClicked.addListener(async () => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.task === MESSAGING_TASK.SYNC_EVENTS) {
     fetchEvents();
+  }
+  if (message.task === MESSAGING_TASK.UPDATE_ALARM) {
+    const fetchDuration =
+      message.options.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
+    setUpAlarms(fetchDuration);
   }
   sendResponse({ status: "events updated" });
 });

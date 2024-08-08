@@ -7,13 +7,8 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { DEFAULT_OPTIONS, MEETING_ACTION } from "../../utils";
+import { DEFAULT_OPTIONS, MEETING_ACTION, MESSAGING_TASK } from "../../utils";
 import styled from "./Options.module.scss";
-
-const MESSAGING_TASK = {
-  SYNC_EVENTS: "sync_events",
-  OPTION_UPDATE: "options_updated",
-};
 
 const Options = () => {
   // State Variables
@@ -37,8 +32,11 @@ const Options = () => {
       options: options,
     });
 
-    if (task === MESSAGING_TASK.SYNC_EVENTS) {
-      chrome.runtime.sendMessage({ task: task }, () => {
+    if (
+      task === MESSAGING_TASK.SYNC_EVENTS ||
+      task === MESSAGING_TASK.UPDATE_ALARM
+    ) {
+      chrome.runtime.sendMessage({ task: task, options: options }, () => {
         console.log("Data Updated data");
       });
     }
@@ -145,6 +143,24 @@ const Options = () => {
             <p>minutes</p>
           </li>
         )}
+        <li>
+          <p>Check for events at every</p>
+          <TextField
+            id="fetchDuration"
+            value={options.fetchDuration}
+            onChange={(e) =>
+              updateOptions(
+                e.target.id,
+                Number(e.target.value),
+                MESSAGING_TASK.UPDATE_ALARM
+              )
+            }
+            inputProps={{ min: 1, max: 24 }}
+            type="number"
+            variant="outlined"
+          />
+          <p>hour</p>
+        </li>
       </ul>
     </div>
   );
