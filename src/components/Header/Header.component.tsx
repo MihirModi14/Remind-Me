@@ -21,9 +21,11 @@ const Header = ({ activeTab, setActiveTab }: any) => {
         <ToggleButton value={TABS.EVENTS}>Events</ToggleButton>
         <ToggleButton value={TABS.OPTIONS}>Options</ToggleButton>
       </ToggleButtonGroup>
-      <a onClick={onClickRefresh}>
-        <img src="./assets/refresh.svg" alt="refresh" />
-      </a>
+      {activeTab === TABS.EVENTS && (
+        <a onClick={onClickRefresh}>
+          <img src="./assets/refresh.svg" alt="refresh" />
+        </a>
+      )}
     </header>
   );
 };

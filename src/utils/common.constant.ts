@@ -13,4 +13,5 @@ export const DEFAULT_OPTIONS = {
   showAllMeeting: false,
   includeOptional: false,
   meetingAction: MEETING_ACTION.NEW_TAB,
+  executeBefore: 0,
 };

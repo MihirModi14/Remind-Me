@@ -1,12 +1,19 @@
-const DEFAULT_OPTIONS = {
-  showAllMeeting: false,
-  includeOptional: false,
+const MESSAGING_TASK = {
+  SYNC_EVENTS: "sync_events",
+  OPTION_UPDATE: "options_updated",
 };
 
 const MEETING_ACTION = {
   NEW_TAB: 1,
   NOTIFICATION: 2,
   NOTHING: 3,
+};
+
+const DEFAULT_OPTIONS = {
+  showAllMeeting: false,
+  includeOptional: false,
+  meetingAction: MEETING_ACTION.NEW_TAB,
+  executeBefore: 0,
 };
 
 // Event listener for when the extension is installed or updated
@@ -84,10 +91,24 @@ const handleEventListResponse = async (eventList) => {
     options?.showAllMeeting || DEFAULT_OPTIONS.showAllMeeting;
   const includeOptional =
     options?.includeOptional || DEFAULT_OPTIONS.includeOptional;
+  const executeBefore = options?.executeBefore || DEFAULT_OPTIONS.executeBefore;
 
-  const todayEvents = sortEvents(
+  const sortedEventList = sortEvents(
     eventList.filter((item) => isDateToday(item?.start?.dateTime))
   );
+  const todayEvents =
+    executeBefore === DEFAULT_OPTIONS.executeBefore
+      ? sortedEventList
+      : sortedEventList.map((event) => ({
+          ...event,
+          start: {
+            ...event.start,
+            executionTime: decreaseTimeByMinutes(
+              event?.start?.dateTime,
+              executeBefore
+            ),
+          },
+        }));
   const updatedTodayEvents = includeOptional
     ? todayEvents
     : todayEvents.filter(
@@ -98,7 +119,7 @@ const handleEventListResponse = async (eventList) => {
           )
       );
   const nextEvents = removePastEvents(updatedTodayEvents);
-  scheduleTask("meeting", nextEvents?.[0]?.start?.dateTime);
+  scheduleTask("meeting", nextEvents?.[0]?.start?.executionTime);
   chrome.storage.local.set({
     events: showAllMeeting ? updatedTodayEvents : nextEvents,
   });
@@ -131,6 +152,16 @@ const toISTDate = (dateTimeString) => {
   const IST_OFFSET = 5.5 * 60 * 60 * 1000;
   return new Date(date.getTime() + IST_OFFSET);
 };
+
+// Utility function to decrease date-time by given minutes
+function decreaseTimeByMinutes(dateTime, minutes) {
+  let date = new Date(dateTime);
+  date.setMinutes(date.getMinutes() - minutes);
+  let adjustedDateTime =
+    dateTime.slice(0, 10) + "T" + date.toTimeString().slice(0, 8);
+
+  return adjustedDateTime;
+}
 
 // Utility function to remove past times from date-time list
 const removePastEvents = (dateTimeList) => {
@@ -168,7 +199,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const eventList = (await chrome.storage.local.get("events")).events;
       const options = (await chrome.storage.local.get("options")).options;
 
-      switch (options.meetingAction) {
+      switch (options.meetingAction || DEFAULT_OPTIONS.meetingAction) {
         case MEETING_ACTION.NEW_TAB:
           createTab(eventList[0]?.hangoutLink);
           break;
@@ -177,6 +208,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             "Meeting Reminder",
             `You have a "${eventList[0].summary}" meeting`
           );
+          await chrome.storage.local.set({
+            meetLink: eventList[0].hangoutLink,
+          });
           break;
       }
       handleEventListResponse(eventList);
@@ -219,12 +253,17 @@ const createNotification = (title, message) => {
 };
 
 chrome.notifications.onButtonClicked.addListener(async () => {
-  const eventList = (await chrome.storage.local.get("events")).events;
-  createTab(eventList[0].hangoutLink);
+  const meetLink = (await chrome.storage.local.get("meetLink")).meetLink;
+  createTab(meetLink);
+});
+
+chrome.notifications.onClicked.addListener(async () => {
+  const meetLink = (await chrome.storage.local.get("meetLink")).meetLink;
+  createTab(meetLink);
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.task === "sync_events") {
+  if (message.task === MESSAGING_TASK.SYNC_EVENTS) {
     fetchEvents();
   }
   sendResponse({ status: "events updated" });

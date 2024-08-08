@@ -1,8 +1,19 @@
-import { FormControl, MenuItem, Select, Switch } from "@mui/material";
+import {
+  FormControl,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { DEFAULT_OPTIONS, MEETING_ACTION } from "../../utils";
 import styled from "./Options.module.scss";
+
+const MESSAGING_TASK = {
+  SYNC_EVENTS: "sync_events",
+  OPTION_UPDATE: "options_updated",
+};
 
 const Options = () => {
   // State Variables
@@ -21,23 +32,29 @@ const Options = () => {
     }
   };
 
-  const setOptionsToStorage = (options: any) => {
+  const setOptionsToStorage = (options: any, task: string) => {
     chrome.storage.local.set({
       options: options,
     });
 
-    chrome.runtime.sendMessage({ task: "sync_events" }, () => {
-      console.log("Data Updated data");
-    });
+    if (task === MESSAGING_TASK.SYNC_EVENTS) {
+      chrome.runtime.sendMessage({ task: task }, () => {
+        console.log("Data Updated data");
+      });
+    }
   };
 
-  const updateOptions = (key: string, value: boolean | string | number) => {
+  const updateOptions = (
+    key: string,
+    value: boolean | string | number,
+    task: string
+  ) => {
     setOptions((options) => {
       const updatedOptions = {
         ...options,
         [key]: value,
       };
-      setOptionsToStorage(updatedOptions);
+      setOptionsToStorage(updatedOptions, task);
       return updatedOptions;
     });
   };
@@ -57,7 +74,11 @@ const Options = () => {
             id="showAllMeeting"
             checked={options.showAllMeeting}
             onChange={(e) =>
-              updateOptions(e.target.id, Boolean(e.target.checked))
+              updateOptions(
+                e.target.id,
+                Boolean(e.target.checked),
+                MESSAGING_TASK.SYNC_EVENTS
+              )
             }
           />
         </li>
@@ -67,7 +88,11 @@ const Options = () => {
             id="includeOptional"
             checked={options.includeOptional}
             onChange={(e) =>
-              updateOptions(e.target.id, Boolean(e.target.checked))
+              updateOptions(
+                e.target.id,
+                Boolean(e.target.checked),
+                MESSAGING_TASK.SYNC_EVENTS
+              )
             }
           />
         </li>
@@ -78,7 +103,11 @@ const Options = () => {
               name="meetingAction"
               value={options.meetingAction}
               onChange={(e) =>
-                updateOptions(e.target.name, Number(e.target.value))
+                updateOptions(
+                  e.target.name,
+                  Number(e.target.value),
+                  MESSAGING_TASK.OPTION_UPDATE
+                )
               }
               renderValue={(selectedValue) => getActionValue(selectedValue)}
             >
@@ -92,6 +121,30 @@ const Options = () => {
             </Select>
           </FormControl>
         </li>
+        {options.meetingAction !== MEETING_ACTION.NOTHING && (
+          <li>
+            <p>
+              {options.meetingAction === MEETING_ACTION.NEW_TAB
+                ? "Open meeting before"
+                : "Show notification before"}
+            </p>
+            <TextField
+              id="executeBefore"
+              value={options.executeBefore}
+              onChange={(e) =>
+                updateOptions(
+                  e.target.id,
+                  Number(e.target.value),
+                  MESSAGING_TASK.SYNC_EVENTS
+                )
+              }
+              inputProps={{ min: 0, max: 60 }}
+              type="number"
+              variant="outlined"
+            />
+            <p>minutes</p>
+          </li>
+        )}
       </ul>
     </div>
   );
