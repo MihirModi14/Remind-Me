@@ -1,9 +1,3 @@
-const MESSAGING_TASK = {
-  SYNC_EVENTS: "sync_events",
-  OPTION_UPDATE: "options_updated",
-  UPDATE_ALARM: "update_alarm",
-};
-
 const MEETING_ACTION = {
   NEW_TAB: 1,
   NOTIFICATION: 2,
@@ -16,6 +10,12 @@ const DEFAULT_OPTIONS = {
   meetingAction: MEETING_ACTION.NEW_TAB,
   executeBefore: 0,
   fetchDuration: 1,
+};
+
+const MESSAGING_TASK = {
+  SYNC_EVENTS: "sync_events",
+  OPTION_UPDATE: "options_updated",
+  UPDATE_ALARM: "update_alarm",
 };
 
 // Event listener for when the extension is installed or updated
@@ -50,7 +50,6 @@ const fetchAuthTokenAndEvents = () => {
     }
     await chrome.storage.local.set({ token });
     fetchEvents();
-    fetchUserInfo();
   });
 };
 
@@ -66,33 +65,17 @@ const getEventList = async () => {
   );
 };
 
-const getUserInfo = async () => {
-  return fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: {
-      Authorization:
-        "Bearer " + (await chrome.storage.local.get("token")).token,
-    },
-  });
-};
-
-const fetchUserInfo = () => {
-  getUserInfo()
-    .then((response) => response.json())
-    .then((data) => {
-      chrome.storage.local.set({ email: data.email });
-    });
-};
-
 // Function to fetch events from Google Calendar API
 const fetchEvents = () => {
   getEventList()
     .then((response) => response.json())
-    .then((response) => handleEventListResponse(response.items))
+    .then((response) => handleEventListResponse(response))
     .catch((error) => console.error("Error fetching events:", error));
 };
 
-const handleEventListResponse = async (eventList) => {
-  const myEmail = (await chrome.storage.local.get("email")).email;
+const handleEventListResponse = async (response) => {
+  const eventList = response.items;
+  const myEmail = response.summary;
   const options = (await chrome.storage.local.get("options")).options;
   const showAllMeeting =
     options?.showAllMeeting || DEFAULT_OPTIONS.showAllMeeting;

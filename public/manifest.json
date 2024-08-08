@@ -11,25 +11,9 @@
     "service_worker": "background.js"
   },
 
-  "permissions": [
-    "identity",
-    "alarms",
-    "storage",
-    "identity.email",
-    "notifications"
-  ],
+  "permissions": ["identity", "alarms", "storage", "notifications"],
   "oauth2": {
     "client_id": "686032428033-98b4n4kch7b061kni5plgrjtanbhucjt.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/calendar.readonly",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
-    ]
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content-script.js"]
-    }
-  ]
+    "scopes": ["https://www.googleapis.com/auth/calendar.readonly"]
+  }
 }
