@@ -208,9 +208,14 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const options = (await chrome.storage.local.get("options"))?.options;
 
       if (!eventList[0]?.hangoutLink) {
+        const isExecuteBeforeZero = options.executeBefore === 0;
         createNotification(
           "Meeting Reminder",
-          `You have a "${eventList[0].summary}" meeting`,
+          `You have a "${eventList[0].summary}" meeting ${
+            isExecuteBeforeZero
+              ? "now"
+              : `in ${options.executeBefore} minute`
+          }`,
           false
         );
       } else {
@@ -219,9 +224,14 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             createTab(eventList[0]?.hangoutLink);
             break;
           case MEETING_ACTION.NOTIFICATION:
+            const isExecuteBeforeZero = options.executeBefore === 0;
             createNotification(
               "Meeting Reminder",
-              `You have a "${eventList[0].summary}" meeting`,
+              `You have a "${eventList[0].summary}" meeting ${
+                isExecuteBeforeZero
+                  ? "now"
+                  : `in ${options.executeBefore} minute`
+              }`,
               true
             );
             await chrome.storage.local.set({
