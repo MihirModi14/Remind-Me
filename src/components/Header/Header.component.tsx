@@ -1,13 +1,18 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { TABS } from "../../utils";
+import { MESSAGING_TASK, TABS } from "../../utils";
 
 import style from "./Header.module.scss";
+import { useState } from "react";
 
 const Header = ({ activeTab, setActiveTab }: any) => {
+  // State Variables
+  const [rotate, setRotate] = useState(0);
+
   // Page Events
   const onClickRefresh = () => {
-    chrome.runtime.sendMessage({ task: "sync_events" }, () => {
+    chrome.runtime.sendMessage({ task: MESSAGING_TASK.SYNC_EVENTS }, () => {
       console.log("refresh done");
+      setRotate((prevRotate) => prevRotate + 360);
     });
   };
 
@@ -23,7 +28,14 @@ const Header = ({ activeTab, setActiveTab }: any) => {
       </ToggleButtonGroup>
       {activeTab === TABS.EVENTS && (
         <a onClick={onClickRefresh}>
-          <img src="./assets/refresh.svg" alt="refresh" />
+          <img
+            style={{
+              transform: `rotate(${rotate}deg)`,
+              transition: "transform 0.3s ease",
+            }}
+            src="./assets/refresh.svg"
+            alt="refresh"
+          />
         </a>
       )}
     </header>
