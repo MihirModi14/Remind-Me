@@ -21,4 +21,5 @@ export const MESSAGING_TASK = {
   SYNC_EVENTS: "sync_events",
   OPTION_UPDATE: "options_updated",
   UPDATE_ALARM: "update_alarm",
+  UPDATE_EVENTS: "update_events",
 };

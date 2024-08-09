@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { formatTimeTo12Hour } from "../../utils";
+import { MESSAGING_TASK, formatTimeTo12Hour } from "../../utils";
 
 import style from "./Events.module.scss";
 
@@ -19,6 +19,14 @@ const Events = () => {
       .get("events")
       .then((events: any) => setEventList(events.events));
   };
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.task === MESSAGING_TASK.UPDATE_EVENTS) {
+      console.log(sender);
+      getEventList();
+      return sendResponse({});
+    }
+  });
 
   return (
     <div className={style.events}>

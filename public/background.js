@@ -16,6 +16,7 @@ const MESSAGING_TASK = {
   SYNC_EVENTS: "sync_events",
   OPTION_UPDATE: "options_updated",
   UPDATE_ALARM: "update_alarm",
+  UPDATE_EVENTS: "update_events",
 };
 
 // Event listener for when the extension is installed or updated
@@ -112,6 +113,13 @@ const handleEventListResponse = async (response) => {
   scheduleTask("meeting", nextEvents?.[0]?.start?.executionTime);
   chrome.storage.local.set({
     events: showAllMeeting ? updatedTodayEvents : nextEvents,
+  });
+  chrome.runtime.sendMessage({ task: MESSAGING_TASK.UPDATE_EVENTS }, () => {
+    if (chrome.runtime.lastError) {
+      console.log("popup is closed");
+    } else {
+      console.log("refresh done");
+    }
   });
 };
 
