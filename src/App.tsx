@@ -12,7 +12,7 @@ function App() {
   return (
     <main className="container">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-      {/* <section
+      <section
         style={{ display: activeTab === TABS.EVENTS ? "block" : "none" }}
       >
         {<Events />}
@@ -23,8 +23,7 @@ function App() {
         }}
       >
         {<Options />}
-      </section> */}
-      <section>{activeTab === TABS.EVENTS ? <Events /> : <Options />}</section>
+      </section>
     </main>
   );
 }
