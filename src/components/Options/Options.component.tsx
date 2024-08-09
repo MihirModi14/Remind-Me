@@ -115,7 +115,7 @@ const Options = () => {
               <MenuItem value={MEETING_ACTION.NOTIFICATION}>
                 Send Notification
               </MenuItem>
-              <MenuItem value={MEETING_ACTION.NOTHING}>Nothing</MenuItem>
+              <MenuItem value={MEETING_ACTION.NOTHING}>Do Nothing</MenuItem>
             </Select>
           </FormControl>
         </li>
