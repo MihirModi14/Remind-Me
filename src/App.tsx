@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { TABS } from "./utils/common.constant";
 import { Events, Header, Options } from "./components";
-import "./App.css";
+import "./App.scss";
 
 function App() {
   // State Variables
@@ -12,16 +12,10 @@ function App() {
   return (
     <main className="container">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-      <section
-        style={{ display: activeTab === TABS.EVENTS ? "block" : "none" }}
-      >
+      <section className={activeTab === TABS.EVENTS ? "" : "hide"}>
         {<Events />}
       </section>
-      <section
-        style={{
-          display: activeTab === TABS.OPTIONS ? "block" : "none",
-        }}
-      >
+      <section className={activeTab === TABS.OPTIONS ? "" : "hide"}>
         {<Options />}
       </section>
     </main>
