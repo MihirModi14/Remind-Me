@@ -16,8 +16,10 @@ const Events = () => {
   // Helper Methods
   const getEventList = () => {
     chrome.storage.local
-      .get("events")
-      .then((events: any) => setEventList(events.events));
+      .get("eventsInfo")
+      .then((eventsInfo: any) =>
+        setEventList(eventsInfo?.eventsInfo?.events || [])
+      );
   };
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -75,7 +75,7 @@ const fetchEvents = () => {
 };
 
 const handleEventListResponse = async (response) => {
-  const eventList = response.items;
+  const eventList = response.items || [];
   const myEmail = response.summary;
   const options = (await chrome.storage.local.get("options")).options;
   const showAllMeeting =
@@ -83,23 +83,23 @@ const handleEventListResponse = async (response) => {
   const includeOptional =
     options?.includeOptional || DEFAULT_OPTIONS.includeOptional;
   const executeBefore = options?.executeBefore || DEFAULT_OPTIONS.executeBefore;
+  const isExecuteBeforeZero = executeBefore === 0;
 
   const sortedEventList = sortEvents(
     eventList.filter((item) => isDateToday(item?.start?.dateTime))
   );
-  const todayEvents =
-    executeBefore === DEFAULT_OPTIONS.executeBefore
-      ? sortedEventList
-      : sortedEventList.map((event) => ({
-          ...event,
-          start: {
-            ...event.start,
-            executionTime: decreaseTimeByMinutes(
-              event?.start?.dateTime,
-              executeBefore
-            ),
-          },
-        }));
+  const todayEvents = isExecuteBeforeZero
+    ? sortedEventList
+    : sortedEventList.map((event) => ({
+        ...event,
+        start: {
+          ...event.start,
+          executionTime: decreaseTimeByMinutes(
+            event?.start?.dateTime,
+            executeBefore
+          ),
+        },
+      }));
   const updatedTodayEvents = includeOptional
     ? todayEvents
     : todayEvents.filter(
@@ -110,9 +110,17 @@ const handleEventListResponse = async (response) => {
           )
       );
   const nextEvents = removePastEvents(updatedTodayEvents);
-  scheduleTask("meeting", nextEvents?.[0]?.start?.executionTime);
+  scheduleTask(
+    "meeting",
+    isExecuteBeforeZero
+      ? nextEvents?.[0]?.start?.dateTime
+      : nextEvents?.[0]?.start?.executionTime
+  );
   chrome.storage.local.set({
-    events: showAllMeeting ? updatedTodayEvents : nextEvents,
+    eventsInfo: {
+      ...response,
+      events: showAllMeeting ? updatedTodayEvents : nextEvents,
+    },
   });
   chrome.runtime.sendMessage({ task: MESSAGING_TASK.UPDATE_EVENTS }, () => {
     if (chrome.runtime.lastError) {
@@ -194,24 +202,35 @@ const scheduleTask = (taskName, dateTime) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   switch (alarm.name) {
     case "meeting":
-      const eventList = (await chrome.storage.local.get("events")).events;
-      const options = (await chrome.storage.local.get("options")).options;
+      const eventsInfo = (await chrome.storage.local.get("eventsInfo"))
+        ?.eventsInfo;
+      const eventList = eventsInfo?.events;
+      const options = (await chrome.storage.local.get("options"))?.options;
 
-      switch (options.meetingAction || DEFAULT_OPTIONS.meetingAction) {
-        case MEETING_ACTION.NEW_TAB:
-          createTab(eventList[0]?.hangoutLink);
-          break;
-        case MEETING_ACTION.NOTIFICATION:
-          createNotification(
-            "Meeting Reminder",
-            `You have a "${eventList[0].summary}" meeting`
-          );
-          await chrome.storage.local.set({
-            meetLink: eventList[0].hangoutLink,
-          });
-          break;
+      if (!eventList[0]?.hangoutLink) {
+        createNotification(
+          "Meeting Reminder",
+          `You have a "${eventList[0].summary}" meeting`,
+          false
+        );
+      } else {
+        switch (options.meetingAction || DEFAULT_OPTIONS.meetingAction) {
+          case MEETING_ACTION.NEW_TAB:
+            createTab(eventList[0]?.hangoutLink);
+            break;
+          case MEETING_ACTION.NOTIFICATION:
+            createNotification(
+              "Meeting Reminder",
+              `You have a "${eventList[0].summary}" meeting`,
+              true
+            );
+            await chrome.storage.local.set({
+              meetLink: eventList[0].hangoutLink,
+            });
+            break;
+        }
       }
-      handleEventListResponse(eventList);
+      handleEventListResponse(eventsInfo);
       break;
     case "fetchEvents":
       console.log("fetchAuthTokenAndEvents function called", new Date());
@@ -236,13 +255,13 @@ const createTab = (url, retryCount = 0) => {
   });
 };
 
-const createNotification = (title, message) => {
+const createNotification = (title, message, showButton) => {
   const options = {
     type: "basic",
     iconUrl: "meeting.jpeg",
     title: title,
     message: message,
-    buttons: [{ title: "Join Meeting" }],
+    buttons: showButton ? [{ title: "Join Meeting" }] : [],
   };
 
   chrome.notifications.create("notify", options, (notificationId) => {
@@ -251,11 +270,6 @@ const createNotification = (title, message) => {
 };
 
 chrome.notifications.onButtonClicked.addListener(async () => {
-  const meetLink = (await chrome.storage.local.get("meetLink")).meetLink;
-  createTab(meetLink);
-});
-
-chrome.notifications.onClicked.addListener(async () => {
   const meetLink = (await chrome.storage.local.get("meetLink")).meetLink;
   createTab(meetLink);
 });
