@@ -16,10 +16,6 @@
       padding: 16px 12px;
       width: 100%;
 
-      &:hover {
-        background-color: $grayColor1;
-      }
-
       .meetingInfo {
         display: flex;
         justify-content: space-between;
@@ -53,5 +49,11 @@
     align-items: center;
     font-size: 14px;
     height: 100%;
+  }
+}
+
+.hoverStyle {
+  &:hover {
+    background-color: $grayColor1;
   }
 }

@@ -35,7 +35,12 @@ const Events = () => {
       <ul>
         {eventList.map((event) => {
           return (
-            <a key={event.id} href={event.hangoutLink} target="_blank">
+            <a
+              key={event.id}
+              href={event.hangoutLink}
+              className={event.hangoutLink ? style.hoverStyle : ""}
+              target="_blank"
+            >
               <div className={style.meetingInfo}>
                 <p title={event.summary}>{event.summary}</p>
                 <span>
