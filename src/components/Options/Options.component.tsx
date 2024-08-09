@@ -67,7 +67,7 @@ const Options = () => {
     <div className={styled.options}>
       <ul>
         <li>
-          <p>Show past events</p>
+          <p>Show past meetings</p>
           <Switch
             id="showAllMeeting"
             checked={options.showAllMeeting}
@@ -144,7 +144,7 @@ const Options = () => {
           </li>
         )}
         <li>
-          <p>Check for events at every</p>
+          <p>Check for meetings at every</p>
           <TextField
             id="fetchDuration"
             value={options.fetchDuration}
