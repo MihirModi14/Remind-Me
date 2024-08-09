@@ -219,7 +219,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
           false
         );
       } else {
-        switch (options.meetingAction || DEFAULT_OPTIONS.meetingAction) {
+        switch (options?.meetingAction || DEFAULT_OPTIONS.meetingAction) {
           case MEETING_ACTION.NEW_TAB:
             createTab(eventList[0]?.hangoutLink);
             break;
@@ -268,7 +268,7 @@ const createTab = (url, retryCount = 0) => {
 const createNotification = (title, message, showButton) => {
   const options = {
     type: "basic",
-    iconUrl: "meeting.jpeg",
+    iconUrl: "./assets/meeting.jpeg",
     title: title,
     message: message,
     buttons: showButton ? [{ title: "Join Meeting" }] : [],

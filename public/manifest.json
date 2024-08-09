@@ -3,7 +3,11 @@
   "name": "Remind Me",
   "description": "Get timely reminders for your tasks and meetings with this extension.",
   "version": "1.0.0",
+  "icons": {
+    "128": "./assets/logo.png"
+  },
   "action": {
+    "default_icon": "./assets/logo.png",
     "default_popup": "index.html",
     "matches": ["<all_urls>"]
   },
