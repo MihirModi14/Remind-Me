@@ -151,7 +151,7 @@ const Options = () => {
             onChange={(e) =>
               updateOptions(
                 e.target.id,
-                Number(e.target.value),
+                Number(e.target.value) === 0 ? 1 : Number(e.target.value),
                 MESSAGING_TASK.UPDATE_ALARM
               )
             }
