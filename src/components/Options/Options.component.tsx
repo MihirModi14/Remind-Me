@@ -36,7 +36,7 @@ const Options = () => {
       task === MESSAGING_TASK.SYNC_EVENTS ||
       task === MESSAGING_TASK.UPDATE_ALARM
     ) {
-      chrome.runtime.sendMessage({ task: task, options: options }, () => {
+      chrome.runtime.sendMessage({ task: task }, () => {
         console.log("Data Updated data");
       });
     }

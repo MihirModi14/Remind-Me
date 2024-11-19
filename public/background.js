@@ -22,22 +22,22 @@ const MESSAGING_TASK = {
 // Event listener for when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(async () => {
   fetchAuthTokenAndEvents();
-  const options = (await chrome.storage.local.get("options")).options;
-  const fetchDuration = options?.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
-  setUpAlarms(fetchDuration);
+  setUpAlarms();
 });
 
 // Event listener for when the browser starts up
-chrome.runtime.onStartup.addListener(async () => {
+chrome.runtime.onStartup.addListener(() => {
   fetchAuthTokenAndEvents();
-  const options = (await chrome.storage.local.get("options")).options;
-  const fetchDuration = options?.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
-  setUpAlarms(fetchDuration);
+  setUpAlarms();
 });
 
 // Function to set up periodic alarms
-const setUpAlarms = (periodInHour) => {
+const setUpAlarms = async () => {
+  const options = (await chrome.storage.local.get("options")).options;
+
+  const periodInHour = options?.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
   const periodInMinutes = periodInHour * 60;
+
   chrome.alarms.clear("fetchEvents");
   chrome.alarms.create("fetchEvents", { periodInMinutes: periodInMinutes });
 };
@@ -91,24 +91,24 @@ const handleEventListResponse = async (response) => {
   const todayEvents = isExecuteBeforeZero
     ? sortedEventList
     : sortedEventList.map((event) => ({
-        ...event,
-        start: {
-          ...event.start,
-          executionTime: decreaseTimeByMinutes(
-            event?.start?.dateTime,
-            executeBefore
-          ),
-        },
-      }));
+      ...event,
+      start: {
+        ...event.start,
+        executionTime: decreaseTimeByMinutes(
+          event?.start?.dateTime,
+          executeBefore
+        ),
+      },
+    }));
   const updatedTodayEvents = includeOptional
     ? todayEvents
     : todayEvents.filter(
-        (event) =>
-          !event.attendees ||
-          event.attendees.some(
-            (attendee) => attendee.email === myEmail && !attendee.optional
-          )
-      );
+      (event) =>
+        !event.attendees ||
+        event.attendees.some(
+          (attendee) => attendee.email === myEmail && !attendee.optional
+        )
+    );
   const nextEvents = removePastEvents(updatedTodayEvents);
   scheduleTask(
     "meeting",
@@ -213,8 +213,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
           "Meeting Reminder",
           `You have a "${eventList[0].summary}" meeting ${
             isExecuteBeforeZero
-              ? "now"
-              : `in ${options.executeBefore} minute`
+            ? "now"
+            : `in ${options.executeBefore} minute`
           }`,
           false
         );
@@ -229,8 +229,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
               "Meeting Reminder",
               `You have a "${eventList[0].summary}" meeting ${
                 isExecuteBeforeZero
-                  ? "now"
-                  : `in ${options.executeBefore} minute`
+                ? "now"
+                : `in ${options.executeBefore} minute`
               }`,
               true
             );
@@ -289,9 +289,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     fetchEvents();
   }
   if (message.task === MESSAGING_TASK.UPDATE_ALARM) {
-    const fetchDuration =
-      message.options.fetchDuration || DEFAULT_OPTIONS.fetchDuration;
-    setUpAlarms(fetchDuration);
+    setUpAlarms();
   }
   sendResponse({ status: "events updated" });
 });

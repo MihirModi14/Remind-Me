@@ -9,15 +9,23 @@
   "action": {
     "default_icon": "./assets/logo.png",
     "default_popup": "index.html",
-    "matches": ["<all_urls>"]
+    "matches": [
+      "<all_urls>"
+    ]
   },
   "background": {
     "service_worker": "background.js"
   },
-
-  "permissions": ["identity", "alarms", "storage", "notifications"],
+  "permissions": [
+    "identity",
+    "alarms",
+    "storage",
+    "notifications"
+  ],
   "oauth2": {
-    "client_id": "686032428033-98b4n4kch7b061kni5plgrjtanbhucjt.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/calendar.readonly"]
+    "client_id": "686032428033-oitbnf1gnsm85ngm0j9gvdkfjnpq4aaj.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.readonly"
+    ]
   }
 }

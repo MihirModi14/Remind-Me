@@ -1,10 +1,15 @@
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { MESSAGING_TASK, TABS } from "../../utils";
-
-import style from "./Header.module.scss";
 import { useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 
-const Header = ({ activeTab, setActiveTab }: any) => {
+import { MESSAGING_TASK, TABS } from "../../utils";
+import style from "./Header.module.scss";
+
+type HeaderProps = {
+  activeTab: string;
+  setActiveTab: (activeTab: string) => void;
+};
+
+const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
   // State Variables
   const [rotate, setRotate] = useState(0);
 
