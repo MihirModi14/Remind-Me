@@ -88,18 +88,16 @@ const handleEventListResponse = async (response) => {
   const sortedEventList = sortEvents(
     eventList.filter((item) => isDateToday(item?.start?.dateTime))
   );
-  const todayEvents = isExecuteBeforeZero
-    ? sortedEventList
-    : sortedEventList.map((event) => ({
-      ...event,
-      start: {
-        ...event.start,
-        executionTime: decreaseTimeByMinutes(
-          event?.start?.dateTime,
-          executeBefore
-        ),
-      },
-    }));
+  const todayEvents = sortedEventList.map((event) => ({
+    ...event,
+    start: {
+      ...event.start,
+      executionTime: decreaseTimeByMinutes(
+        event?.start?.dateTime,
+        executeBefore
+      ),
+    },
+  }));
   const updatedTodayEvents = includeOptional
     ? todayEvents
     : todayEvents.filter(
@@ -111,10 +109,7 @@ const handleEventListResponse = async (response) => {
     );
   const nextEvents = removePastEvents(updatedTodayEvents);
   scheduleTask(
-    "meeting",
-    isExecuteBeforeZero
-      ? nextEvents?.[0]?.start?.dateTime
-      : nextEvents?.[0]?.start?.executionTime
+    "meeting", nextEvents?.[0]?.start?.executionTime
   );
   chrome.storage.local.set({
     eventsInfo: {
@@ -173,7 +168,7 @@ function decreaseTimeByMinutes(dateTime, minutes) {
 const removePastEvents = (dateTimeList) => {
   const now = new Date();
   return dateTimeList.filter((item) => {
-    const date = new Date(item?.start?.dateTime);
+    const date = new Date(item?.start?.executionTime);
     return date >= now;
   });
 };
@@ -211,8 +206,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         const isExecuteBeforeZero = options.executeBefore === 0;
         createNotification(
           "Meeting Reminder",
-          `You have a "${eventList[0].summary}" meeting ${
-            isExecuteBeforeZero
+          `You have a "${eventList[0].summary}" meeting ${isExecuteBeforeZero
             ? "now"
             : `in ${options.executeBefore} minute`
           }`,
@@ -227,8 +221,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             const isExecuteBeforeZero = options.executeBefore === 0;
             createNotification(
               "Meeting Reminder",
-              `You have a "${eventList[0].summary}" meeting ${
-                isExecuteBeforeZero
+              `You have a "${eventList[0].summary}" meeting ${isExecuteBeforeZero
                 ? "now"
                 : `in ${options.executeBefore} minute`
               }`,
