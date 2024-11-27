@@ -2,6 +2,7 @@
 
 .events {
   height: 100%;
+
   ul {
     list-style: none;
     padding: 0;
@@ -38,6 +39,10 @@
       .description {
         margin-top: 7px;
         font-size: 14px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
     }
   }
@@ -53,6 +58,7 @@
 
 .hoverStyle {
   cursor: pointer;
+
   &:hover {
     background-color: $grayColor1;
   }

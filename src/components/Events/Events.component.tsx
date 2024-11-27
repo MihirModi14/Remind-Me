@@ -49,7 +49,7 @@ const Events = () => {
                 </span>
               </div>
               {event.description && (
-                <div className={style.description}>{event.description}</div>
+                <div title={event.description} className={style.description}>{event.description}</div>
               )}
             </a>
           );
